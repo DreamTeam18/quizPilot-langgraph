@@ -17,7 +17,7 @@ This design demonstrates agents as tools i.e specialist agents perform focused t
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -e ".[dev,openrouter]"
+python -m pip install -e ".[dev]"
 quizpilot --demo
 ```
 ```bash
@@ -77,10 +77,6 @@ The outer `StateGraph` owns persistent session state and the tool-call history.
 Set **`QUIZPILOT_MODEL` in `.env` once**. The coach, question specialist, and
 grading specialist all share that model and its API key. Each agent uses its own prompt and tools. a quiz makes multiple model calls.
 
-```bash
-python -m pip install -e ".[openrouter]"
-```
-
 ```dotenv
 QUIZPILOT_MODEL=openrouter:<your-model-id>
 OPENROUTER_API_KEY=your-openrouter-api-key
@@ -121,7 +117,7 @@ useful before any key is configured.
 Run both halves locally:
 
 ```bash
-python -m pip install -e ".[dev,web]"
+python -m pip install -e ".[dev]"
 npm install
 npm run api    # FastAPI on :8000
 npm run dev    # Next.js on :3000, proxying /api to :8000

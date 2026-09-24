@@ -237,7 +237,7 @@ def main(argv: list[str] | None = None) -> int:
     except ImportError as exc:
         print(f"Missing model integration: {exc}", file=sys.stderr)
         print(
-            'Install the matching extra, for example: pip install -e ".[openrouter]"',
+            'Install the matching extra, for example: pip install -e ".[anthropic]"',
             file=sys.stderr,
         )
         return 1

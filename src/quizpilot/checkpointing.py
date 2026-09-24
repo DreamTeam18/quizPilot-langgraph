@@ -67,7 +67,7 @@ def postgres_store(dsn: str) -> Iterator[Store]:
         from psycopg import Connection
         from psycopg.rows import dict_row
     except ImportError as exc:  # pragma: no cover - depends on optional extras
-        raise ImportError(f"{exc}. Install the web extra: pip install -e '.[web]'") from exc
+        raise ImportError(f"{exc}. Reinstall the project: pip install -e .") from exc
 
     with Connection.connect(
         dsn, autocommit=True, prepare_threshold=None, row_factory=dict_row
