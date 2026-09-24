@@ -28,6 +28,8 @@ export function QuizCard({
   }, [question.number, question.question]);
 
   const ready = answer.trim().length > 0 && !busy;
+  // Busy for any reason other than the hint means the answer is in flight.
+  const grading = busy && !hinting;
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -79,7 +81,7 @@ export function QuizCard({
 
       <div className="actions">
         <button type="submit" className="primary" disabled={!ready}>
-          Submit answer
+          {grading ? "Grading…" : "Submit answer"}
         </button>
         <button
           type="button"

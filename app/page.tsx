@@ -100,6 +100,8 @@ export default function Page() {
           />
         )}
 
+        {state.busy && state.phase && showingCard && <PhaseBanner label={state.phase} />}
+
         {state.sessionId && !state.summary && (
           <p className="footnote">
             Session <code>{state.sessionId}</code> — saved after every answer. Closing this tab
@@ -109,8 +111,6 @@ export default function Page() {
             </button>
           </p>
         )}
-
-        {state.busy && state.phase && showingCard && <PhaseBanner label={state.phase} />}
 
         <a className="scroll-cue" href="#how-it-works">
           See how it works <span aria-hidden>↓</span>
