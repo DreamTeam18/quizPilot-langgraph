@@ -1,7 +1,5 @@
 import type { Health, QuizEvent, Snapshot } from "./types";
 
-const ACCESS_KEY = "quizpilot.access";
-
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -12,29 +10,9 @@ export class ApiError extends Error {
   }
 }
 
-export function storedAccessCode(): string {
-  if (typeof window === "undefined") return "";
-  try {
-    return window.localStorage.getItem(ACCESS_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
-
-export function rememberAccessCode(code: string): void {
-  try {
-    if (code) window.localStorage.setItem(ACCESS_KEY, code);
-    else window.localStorage.removeItem(ACCESS_KEY);
-  } catch {
-    // A browser with site data blocked simply asks for the code again.
-  }
-}
-
 function headers(body: boolean): HeadersInit {
   const result: Record<string, string> = {};
   if (body) result["Content-Type"] = "application/json";
-  const code = storedAccessCode();
-  if (code) result["x-quizpilot-access"] = code;
   return result;
 }
 

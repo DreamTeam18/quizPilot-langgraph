@@ -29,7 +29,6 @@ def api(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "load_environment", lambda: None)
     for name in ("QUIZPILOT_DATABASE_URL", "DATABASE_URL", "POSTGRES_URL", "QUIZPILOT_MODEL"):
         monkeypatch.delenv(name, raising=False)
-    monkeypatch.delenv("QUIZPILOT_ACCESS_CODE", raising=False)
     module = load_api()
     monkeypatch.setattr(module, "DEFAULT_DATABASE", tmp_path / "sessions.sqlite3")
     return module
@@ -72,7 +71,6 @@ def test_health_reports_demo_without_a_model(client):
     assert body["demo"] is True
     assert body["live"] is False
     assert body["persistence"] == "sqlite"
-    assert body["accessCode"] is False
     assert "key" not in json.dumps(body).lower()
 
 
@@ -157,19 +155,6 @@ def test_an_empty_answer_is_rejected(client):
     response = client.post(f"/api/session/{session_id}/reply", json={"kind": "answer", "text": " "})
     assert response.status_code == 400
     assert "Enter an answer" in response.json()["detail"]
-
-
-def test_an_access_code_gates_every_route(api, monkeypatch):
-    monkeypatch.setenv("QUIZPILOT_ACCESS_CODE", "open-sesame")
-    with TestClient(api.app) as client:
-        assert client.post("/api/session", json={"mode": "demo"}).status_code == 401
-        assert client.get("/api/session/deadbeefcafe").status_code == 401
-        allowed = client.post(
-            "/api/session",
-            json={"mode": "demo"},
-            headers={"x-quizpilot-access": "open-sesame"},
-        )
-        assert allowed.status_code == 200
 
 
 def test_cleanup_requires_the_cron_secret(api, monkeypatch):

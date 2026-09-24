@@ -10,24 +10,20 @@ export function Landing({
   health,
   busy,
   onStart,
-  onAccessCode,
 }: {
   health: Health | null;
   busy: boolean;
   onStart: (options: StartOptions) => void;
-  onAccessCode: (code: string) => void;
 }) {
   const [mode, setMode] = useState<Mode>("demo");
   const [topic, setTopic] = useState("Python basics");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [maxQuestions, setMaxQuestions] = useState(5);
-  const [code, setCode] = useState("");
 
   const liveReady = health?.live ?? false;
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (code) onAccessCode(code);
     onStart({
       mode,
       topic: mode === "demo" ? "Python basics" : topic,
@@ -99,17 +95,6 @@ export function Landing({
             ))}
           </select>
         </label>
-        {health?.accessCode && (
-          <label>
-            Access code
-            <input
-              type="password"
-              value={code}
-              onChange={(event) => setCode(event.target.value)}
-              autoComplete="off"
-            />
-          </label>
-        )}
       </div>
 
       <div className="actions">

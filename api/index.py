@@ -13,7 +13,6 @@ request task emits heartbeats.
 import asyncio
 import json
 import os
-import secrets
 import sys
 from collections.abc import Callable, Iterator
 from pathlib import Path
@@ -70,19 +69,8 @@ def client_id(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def check_access(request: Request) -> None:
-    """An optional shared code, for when the deployment should not be open."""
-    expected = os.environ.get("QUIZPILOT_ACCESS_CODE", "").strip()
-    if not expected:
-        return
-    supplied = request.headers.get("x-quizpilot-access", "")
-    if not secrets.compare_digest(supplied, expected):
-        raise HTTPException(status_code=401, detail="This QuizPilot needs an access code.")
-
-
 def guard(request: Request, limit: housekeeping.Limit) -> None:
     """Count the request before any streaming starts, so a refusal can be a 429."""
-    check_access(request)
     with open_store(local_database()) as store:
         try:
             housekeeping.enforce(store.connection, limit, client_id(request))
@@ -203,9 +191,7 @@ async def post_retry(session_id: str, request: Request):
 
 
 @app.get("/api/session/{session_id}")
-async def get_session(session_id: str, request: Request):
-    check_access(request)
-
+async def get_session(session_id: str):
     def read() -> dict[str, Any]:
         with open_store(local_database()) as store:
             return service.snapshot(store.saver, session_id)
@@ -242,7 +228,6 @@ async def health():
         "liveError": live_error or None,
         "persistence": "postgres" if configured_dsn() else "sqlite",
         "database": await asyncio.to_thread(database_state),
-        "accessCode": bool(os.environ.get("QUIZPILOT_ACCESS_CODE", "").strip()),
     }
 
 

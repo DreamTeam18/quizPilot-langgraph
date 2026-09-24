@@ -75,5 +75,4 @@ export type Health = {
   liveError: string | null;
   persistence: "postgres" | "sqlite";
   database: string;
-  accessCode: boolean;
 };

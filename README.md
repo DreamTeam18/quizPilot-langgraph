@@ -141,7 +141,7 @@ from `api/index.py` for `/api/*`.
    the serverless filesystem is ephemeral, so SQLite cannot hold a session
    between two requests.
 2. **Set the environment variables:** `QUIZPILOT_MODEL`, `OPENROUTER_API_KEY`,
-   `DATABASE_URL`, and optionally `QUIZPILOT_ACCESS_CODE`.
+   and `DATABASE_URL`.
 3. **Create the tables once:**
 
    ```bash
@@ -155,8 +155,8 @@ from `api/index.py` for `/api/*`.
    whether the database is reachable, and never discloses the key itself.
 
 A deployed quiz spends *your* model credits. The API rate-limits new sessions
-and replies per IP address, and `QUIZPILOT_ACCESS_CODE` closes the page
-entirely; set it before sharing the URL widely.
+and replies per IP address, which caps any one visitor but not the number of
+visitors. Deploy without `OPENROUTER_API_KEY` to offer the offline demo alone.
 
 Two details are easy to get wrong and are already handled in this repo:
 

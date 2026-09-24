@@ -97,7 +97,6 @@ export default function Page() {
             health={health}
             busy={state.busy}
             onStart={state.start}
-            onAccessCode={state.setAccessCode}
           />
         )}
 

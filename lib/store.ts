@@ -5,7 +5,6 @@ import {
   ApiError,
   createSession,
   fetchSnapshot,
-  rememberAccessCode,
   retrySession,
   sendReply,
 } from "./api";
@@ -72,7 +71,6 @@ type State = {
   resume: (sessionId: string) => Promise<void>;
   advance: () => void;
   reset: () => void;
-  setAccessCode: (code: string) => void;
 };
 
 /** Spread on every reset. `history` is rebuilt so no two resets share an array. */
@@ -255,10 +253,6 @@ export const useQuiz = create<State>((set, get) => {
       clearTimeout(flashTimer);
       remember(null);
       set({ ...blankState() });
-    },
-
-    setAccessCode(code) {
-      rememberAccessCode(code.trim());
     },
   };
 });
