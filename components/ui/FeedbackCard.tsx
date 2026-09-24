@@ -9,12 +9,14 @@ export function FeedbackCard({
   number,
   total,
   hasNext,
+  busy,
   onContinue,
 }: {
   feedback: FeedbackEvent;
   number: number;
   total: number;
   hasNext: boolean;
+  busy: boolean;
   onContinue: () => void;
 }) {
   return (
@@ -70,8 +72,10 @@ export function FeedbackCard({
       )}
 
       <div className="actions">
-        <button type="button" className="primary" onClick={onContinue}>
-          {hasNext ? "Next question" : "See your results"}
+        {/* The grade now arrives before the next question is written, so
+            there is a moment where there is nothing yet to continue to. */}
+        <button type="button" className="primary" onClick={onContinue} disabled={busy}>
+          {busy ? "Preparing…" : hasNext ? "Next question" : "See your results"}
         </button>
         {feedback.hintUsed && <span className="muted">You used a hint on this one.</span>}
       </div>

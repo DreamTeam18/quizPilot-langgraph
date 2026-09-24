@@ -71,6 +71,7 @@ export default function Page() {
             number={state.history.length}
             total={state.total}
             hasNext={Boolean(state.pendingQuestion)}
+            busy={state.busy}
             onContinue={state.advance}
           />
         ) : state.summary ? (

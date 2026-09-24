@@ -158,3 +158,28 @@ def test_demo_refuses_a_custom_topic(saver):
 def test_an_overlong_topic_is_rejected(saver):
     with pytest.raises(ValueError, match="under 120 characters"):
         events(service.start_session(saver, mode="live", topic="x" * 121))
+
+
+def test_the_grade_arrives_before_the_next_question_is_written(saver):
+    """A learner should read their score while the next question is drafted."""
+    session_id, items = start(saver)
+    question = of_type(items, "question")[0]["question"]
+    batch = events(service.reply(saver, session_id, kind="answer", text=reference_for(question)))
+
+    kinds = [item["type"] for item in batch]
+    labels = [item.get("label") for item in batch]
+
+    feedback_at = kinds.index("feedback")
+    writing_at = labels.index("Writing your next question")
+    assert feedback_at < writing_at, (
+        "the grade must be reported before the coach moves on to the next question"
+    )
+    # And the question itself still lands after the grade.
+    assert feedback_at < kinds.index("question")
+
+
+def test_a_grade_is_reported_exactly_once(saver):
+    session_id, items = start(saver)
+    question = of_type(items, "question")[0]["question"]
+    batch = events(service.reply(saver, session_id, kind="answer", text=reference_for(question)))
+    assert len(of_type(batch, "feedback")) == 1

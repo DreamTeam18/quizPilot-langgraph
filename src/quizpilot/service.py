@@ -145,6 +145,14 @@ def emit_result(graph, config: dict[str, Any], seen: int) -> Iterator[dict[str, 
 
 
 def drive(graph, config: dict[str, Any], value: Any, seen: int) -> Iterator[dict[str, Any]]:
+    """Stream a turn, reporting each result at the moment it exists.
+
+    One reply runs several nodes: the coach delegates grading, then delegates
+    writing the next question. The grade is emitted as soon as the tool node
+    produces it, so the learner reads their score while the next question is
+    still being written, rather than after.
+    """
+    reported = seen
     try:
         for update in graph.stream(value, config=config, stream_mode="updates"):
             for node, payload in update.items():
@@ -153,12 +161,17 @@ def drive(graph, config: dict[str, Any], value: Any, seen: int) -> Iterator[dict
                     name = pending_tool(payload or {})
                     if name:
                         yield {"type": "phase", "node": name, "label": TOOL_LABELS[name]}
+                elif node == "tools":
+                    graded = (payload or {}).get("results") or []
+                    for item in graded[reported:]:
+                        yield feedback_event(item)
+                    reported = max(reported, len(graded))
                 elif node == "summarize":
                     yield {"type": "phase", "node": node, "label": SUMMARY_LABEL}
     except Exception as exc:
         yield {"type": "error", "message": describe_error(exc), "canRetry": True}
         return
-    yield from emit_result(graph, config, seen)
+    yield from emit_result(graph, config, reported)
 
 
 def validate_start(
