@@ -198,3 +198,56 @@ def test_demo_reference_answers_receive_full_credit(entry):
 def test_question_limit_is_enforced(limit):
     with pytest.raises(ValueError, match="between 1 and 5"):
         initial_state(topic="Python basics", notes=load_notes(), mode="demo", max_questions=limit)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Which of the following statements is true about lists and tuples?",
+        "Which of the following is mutable?",
+        "Select all that apply: which types are hashable?",
+        "Choose the correct option below.",
+        "Pick the answer above that describes a tuple.",
+    ],
+)
+def test_questions_that_point_at_missing_choices_are_refused(text):
+    from quizpilot.graph import self_contained
+
+    assert not self_contained(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Which is mutable in Python: a list or a tuple? What does mutable mean?",
+        "Why can you reassign an element in a list but not in a tuple?",
+        "A function prints a value but has no return statement. What does its caller receive?",
+        "Explain what follows from a finally block when the try block returns.",
+    ],
+)
+def test_genuine_short_answer_questions_are_allowed(text):
+    from quizpilot.graph import self_contained
+
+    assert self_contained(text)
+
+
+def test_every_demo_question_is_self_contained():
+    from quizpilot.graph import self_contained
+
+    offenders = [card.question.text for card in CARDS if not self_contained(card.question.text)]
+    assert offenders == []
+
+
+def test_a_question_referring_to_missing_choices_stops_the_turn(quiz):
+    agents, graph, config, state = quiz
+
+    class Dangling(CountingAgents):
+        def generate_question(self, state, focus):
+            question = super().generate_question(state, focus)
+            return question.model_copy(
+                update={"text": "Which of the following statements is true about lists?"}
+            )
+
+    broken = build_graph(Dangling(), InMemorySaver())
+    with pytest.raises(ValueError, match="choices it did not supply"):
+        broken.invoke(state, {"configurable": {"thread_id": uuid4().hex}, "recursion_limit": 64})

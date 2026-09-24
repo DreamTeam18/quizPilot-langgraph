@@ -13,7 +13,7 @@ Difficulty = Literal["easy", "medium", "hard"]
 class Question(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    text: str = Field(min_length=1)
+    text: str = Field(min_length=1, max_length=400)
     concept: str = Field(min_length=1)
     difficulty: Difficulty
     reference_answer: str = Field(min_length=1)

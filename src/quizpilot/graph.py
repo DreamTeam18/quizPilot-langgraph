@@ -6,6 +6,7 @@ interrupts, so resuming cannot re-run a question-generation call.
 """
 
 import json
+import re
 from typing import Any, cast
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
@@ -16,6 +17,23 @@ from langgraph.types import interrupt
 
 from quizpilot.agents import AgentSuite
 from quizpilot.schemas import Difficulty, Grade, Question, QuizResult, QuizState
+
+# A short-answer question that points at choices it never supplies cannot be
+# answered. Models reach for multiple-choice phrasing even when told not to,
+# so the application refuses the question rather than presenting an impossible
+# one to the learner.
+DANGLING_REFERENCE = re.compile(
+    r"\b(?:of the following"
+    r"|the following (?:statement|option|choice|answer)s?"
+    r"|(?:option|choice|answer)s? (?:below|above)"
+    r"|select all that apply)\b",
+    re.IGNORECASE,
+)
+
+
+def self_contained(text: str) -> bool:
+    """False when a question refers to choices it does not itself carry."""
+    return DANGLING_REFERENCE.search(text) is None
 
 
 def expected_tool(state: QuizState) -> str:
@@ -132,6 +150,11 @@ def build_graph(agents: AgentSuite, checkpointer: BaseCheckpointSaver):
             if question.difficulty != state["difficulty"]:
                 raise ValueError(
                     "The question agent returned the wrong difficulty. Resume to retry."
+                )
+            if not self_contained(question.text):
+                raise ValueError(
+                    "The question agent referred to choices it did not supply. "
+                    "Resume to retry."
                 )
             previous = {item["question"]["text"].casefold().strip() for item in state["results"]}
             if question.text.casefold().strip() in previous:
