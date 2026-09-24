@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "functions": {
+    "api/**/*.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{tests/**,.venv/**,.quizpilot/**,**/test_*.py,node_modules/**,.next/**,app/**,components/**,lib/**,public/**}"
+    }
+  },
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api/index" }],
+  "crons": [{ "path": "/api/cleanup", "schedule": "0 4 * * *" }]
+}
