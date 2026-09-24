@@ -71,7 +71,7 @@ export function Architecture() {
   return (
     <section className="architecture" id="how-it-works" aria-labelledby="how-it-works-title">
       <header className="arch-head">
-        <h2 id="how-it-works-title">Multi-Agent Orchestration</h2>
+        <h2 id="how-it-works-title">LangGraph Multi-Agent Orchestration</h2>
       </header>
 
       <div className="graph-scroll">
